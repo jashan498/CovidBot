@@ -47,6 +47,7 @@ exports.fetchHeadlines = async function(
 ) {
   try {
     let res = await axios.get(headlinesAPI(country, source, numOfHeadlines));
+    console.log(res);
     return res.data.articles.map(obj => {
       return {
         title: obj.title,

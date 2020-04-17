@@ -6,7 +6,7 @@ require("dotenv").config();
 function returnDate(numDaysBack = 0) {
   return moment()
     .subtract(numDaysBack, "days")
-    .format("YYYY-MM-DD")
+    .format("YYYY-MM-DD");
 }
 
 function editSource(source) {
@@ -14,9 +14,23 @@ function editSource(source) {
 }
 
 function headlinesAPI(country, source, numOfHeadlines) {
-  return `https://newsapi.org/v2/everything?${editSource(source)}q=COVID ${country}&\
+  return `https://newsapi.org/v2/everything?${editSource(
+    source
+  )}q=COVID ${country}&\
 from=${returnDate(5)}&to=${returnDate()}&sortBy=popularity\
 &apiKey=${process.env.NEWS_API_KEY}&pageSize=${numOfHeadlines}&page=1`;
+}
+
+/**
+ * Sometimes URL returned by the API is broken and there
+ * is space after https:
+ */
+function rectifyUrl(url) {
+  if (url && url.includes("https: //")) {
+    return "https:" + url.slice(7);
+  } else {
+    return url;
+  }
 }
 
 /**
@@ -26,17 +40,23 @@ from=${returnDate(5)}&to=${returnDate()}&sortBy=popularity\
  * source: the news source for fetching the headlines
  * numOfHeadlines: number of headlines that the function should return.
  */
-exports.fetchHeadlines = async function (country = '', source = null, numOfHeadlines = 5) {
+exports.fetchHeadlines = async function(
+  country = "",
+  source = null,
+  numOfHeadlines = 3
+) {
   try {
     let res = await axios.get(headlinesAPI(country, source, numOfHeadlines));
-    return res.data.articles.map(ob => {
+    return res.data.articles.map(obj => {
       return {
-        title: ob.title,
-        description: ob.description
-      }
+        title: obj.title,
+        description: obj.description,
+        author: obj.source.name,
+        url: rectifyUrl(obj.url),
+        urlToImage: rectifyUrl(obj.urlToImage)
+      };
     });
   } catch (error) {
     console.log(error);
   }
-}
-// fetchHeadlines().then(x => console.log(x));
+};

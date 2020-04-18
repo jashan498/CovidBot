@@ -8,6 +8,16 @@ function welcomeMessage(userId) {
   };
 }
 
+function welcomeMessage_stat(userId) {
+  return {
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `Hey <@${userId}>! here are stats:\n\n`
+    }
+  };
+}
+
 const divider = {
   type: "divider"
 };
@@ -32,6 +42,17 @@ function createContentBlock(newsTitle, newsDescription, sourceUrl, imageUrl) {
   } else {
     return newsBlock;
   }
+}
+
+function createStatBlock(a,b,c,d) {
+  statisBlock = {
+    type: "section",
+    text: {
+      type: "mrkdwn",
+      text: `*Confirmed:* ${a}\n*Deaths:* ${b}\n*Recovered:* ${c}\n*Active:* ${d}\n`
+    }
+  };
+  return statisBlock;
 }
 
 function createAuthorBlock(author) {
@@ -60,6 +81,24 @@ exports.createMainBlock = function(newsObject, userId) {
         createAuthorBlock(newsObject[news].author)
       ];
       block = [...block, ...singleNewsBlock, divider];
+    }
+  }
+  return block;
+};
+
+exports.createMainBlock_stat = function(statObject, userId) {
+  let block = [welcomeMessage_stat(userId), divider];
+  for (let stat in statObject) {
+    if (Object.prototype.hasOwnProperty.call(statObject, stat)) {
+      let singlestatBlock = [
+        createStatBlock(
+          statObject[stat].Confirmed,
+          statObject[stat].Deaths,
+          statObject[stat].Recovered,
+          statObject[stat].Active
+        )
+      ];
+      block = [...block, ...singlestatBlock, divider];
     }
   }
   return block;

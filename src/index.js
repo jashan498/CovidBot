@@ -1,5 +1,6 @@
 var news = require("./news.js");
 var buildBlock = require("./buildBlock.js");
+var fake_news=require('./fake-news.js');
 var stats = require("./stats.js");
 const { App, ExpressReceiver, directMention } = require("@slack/bolt");
 require("dotenv").config();
@@ -9,6 +10,16 @@ const app = new App({
 });
 
 app.receiver.app.get("/test", (_, res) => res.send("Slackbot is up!"));
+
+app.receiver.app.get("/", (_, res) =>
+{
+  rr=fake_news.check_fake_news("Don't Count on Getting a Refund From Ticketmaster for a Postponed Show","Ticketmaster has clarified its refund policy for events that have been canceled or postponed due to COVID-19, and it’s potentially bad news for people who have purchased tickets for upcoming events.")
+  .then((rr)=>
+  {
+    res.send(rr);
+  }
+  );
+});
 
 async function sendNews(payload) {
   let headlines = await news.fetchHeadlines();

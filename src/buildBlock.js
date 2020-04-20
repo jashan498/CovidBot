@@ -44,7 +44,7 @@ function createContentBlock(newsTitle, newsDescription, sourceUrl, imageUrl) {
   }
 }
 
-function createStatBlock(a,b,c,d) {
+function createStatBlock(a, b, c, d) {
   statisBlock = {
     type: "section",
     text: {
@@ -55,30 +55,54 @@ function createStatBlock(a,b,c,d) {
   return statisBlock;
 }
 
+function truncateDecimals(number, digits) {
+  let multiplier = Math.pow(10, digits),
+    adjustedNum = number * multiplier,
+    truncatedNum = Math[adjustedNum < 0 ? "ceil" : "floor"](adjustedNum);
+
+  return truncatedNum / multiplier;
+}
+
+function createFakeIndexBlock(score, verdict) {
+  return {
+    type: "context",
+    elements: [
+      {
+        type: "mrkdwn",
+        text: `\`Reliability Score: ${truncateDecimals(
+          score,
+          2
+        )} (${verdict})\``
+      }
+    ]
+  };
+}
+
 function createAuthorBlock(author) {
   return {
     type: "context",
     elements: [
       {
         type: "mrkdwn",
-        text: `*Author:* ${author}`
+        text: `*Source:* ${author}`
       }
     ]
   };
 }
 
-exports.createMainBlock = function(newsObject, userId) {
+exports.createMainBlockNews = function(newsObject, userId) {
   let block = [welcomeMessage(userId), divider];
   for (let news in newsObject) {
     if (Object.prototype.hasOwnProperty.call(newsObject, news)) {
       let singleNewsBlock = [
+        createFakeIndexBlock(newsObject[news].score, newsObject[news].decision),
         createContentBlock(
           newsObject[news].title,
           newsObject[news].description,
           newsObject[news].url,
           newsObject[news].urlToImage
         ),
-        createAuthorBlock(newsObject[news].author)
+        createAuthorBlock(newsObject[news].source)
       ];
       block = [...block, ...singleNewsBlock, divider];
     }
@@ -86,7 +110,7 @@ exports.createMainBlock = function(newsObject, userId) {
   return block;
 };
 
-exports.createMainBlock_stat = function(statObject, userId) {
+exports.createMainBlockStat = function(statObject, userId) {
   let block = [welcomeMessage_stat(userId), divider];
   for (let stat in statObject) {
     if (Object.prototype.hasOwnProperty.call(statObject, stat)) {

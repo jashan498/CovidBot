@@ -1,33 +1,54 @@
 var news = require("./news.js");
 var buildBlock = require("./buildBlock.js");
-var fake_news=require('./fake-news.js');
+var fakeNews = require("./fake-news.js");
 var stats = require("./stats.js");
-const { App, ExpressReceiver, directMention } = require("@slack/bolt");
+
 require("dotenv").config();
+
+const { App, ExpressReceiver, directMention } = require("@slack/bolt");
 const app = new App({
   token: process.env.OAUTH_BOT_TOKEN,
   signingSecret: process.env.SECRET
 });
 
-app.receiver.app.get("/test", (_, res) => res.send("Slackbot is up!"));
+app.receiver.app.get("/", (_, res) => res.send("Slackbot is up!"));
 
-app.receiver.app.get("/", (_, res) =>
-{
-  rr=fake_news.check_fake_news("Don't Count on Getting a Refund From Ticketmaster for a Postponed Show","Ticketmaster has clarified its refund policy for events that have been canceled or postponed due to COVID-19, and it’s potentially bad news for people who have purchased tickets for upcoming events.")
-  .then((rr)=>
-  {
-    res.send(rr);
-  }
-  );
+app.receiver.app.get("/test", async (_, res) => {
+  let headlines = await news.fetchHeadlines();
+  let fakeNewsIndexArray = await fetchFakeScore(headlines);
+  headlines = headlines.map((obj, i) => {
+    return { ...obj, ...fakeNewsIndexArray[i] };
+  });
+  console.log(headlines);
+  res.send(headlines);
 });
 
-async function sendNews(payload) {
+async function fetchFakeScore(headlines) {
+  let scores = await Promise.all(
+    headlines.map(headline => {
+      return fakeNews.check_fake_news(headline.title, headline.description);
+    })
+  );
+  return scores;
+}
+
+async function getNewsObject() {
   let headlines = await news.fetchHeadlines();
+  let fakeNewsIndexArray = await fetchFakeScore(headlines);
+  // zip headlines and their fakeness scre
+  headlines = headlines.map((obj, i) => {
+    return { ...obj, ...fakeNewsIndexArray[i] };
+  });
+  return headlines;
+}
+
+async function sendNews(payload) {
+  let news = await getNewsObject();
   const result = await app.client.chat.postMessage({
     token: process.env.OAUTH_BOT_TOKEN,
     channel: payload.channel,
     text: "This is fallback text",
-    blocks: buildBlock.createMainBlock(headlines, payload.user)
+    blocks: buildBlock.createMainBlockNews(news, payload.user)
   });
   return result;
 }
@@ -38,7 +59,7 @@ async function sendStatistics(payload) {
     token: process.env.OAUTH_BOT_TOKEN,
     channel: payload.channel,
     text: "This is fallback text",
-    blocks: buildBlock.createMainBlock_stat(statistics, payload.user)
+    blocks: buildBlock.createMainBlockStat(statistics, payload.user)
   });
   return result;
 }

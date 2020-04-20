@@ -14,18 +14,23 @@ function editSource(source) {
 }
 
 function headlinesAPI(country, source, numOfHeadlines) {
-  return `https://newsapi.org/v2/everything?${editSource(
-    source
-  )}q=COVID ${country}&\
+  return `https://newsapi.org/v2/top-headlines?country=${country}&q=COVID&\
 from=${returnDate(5)}&to=${returnDate()}&sortBy=popularity\
 &apiKey=${process.env.NEWS_API_KEY}&pageSize=${numOfHeadlines}&page=1`;
 }
 
+function articlesAPI(country, source, numOfArticles) {
+  return `https://newsapi.org/v2/everything?${editSource(source)}q=COVID&\
+from=${returnDate(5)}&to=${returnDate()}&sortBy=popularity\
+&apiKey=${process.env.NEWS_API_KEY}&pageSize=${numOfArticles}&page=1`;
+}
+
+//newsapi.org/v2/top-headlines?country=in&q=COVID&from=2020-03-16&sortBy=publishedAt&apiKey=6a0e7103ce524014b4891589d3a2c829&pageSize=10&page=1
 /**
  * Sometimes URL returned by the API is broken and there
  * is space after https:
  */
-function rectifyUrl(url) {
+http: function rectifyUrl(url) {
   if (url && url.includes("https: //")) {
     return "https:" + url.slice(7);
   } else {
@@ -41,7 +46,7 @@ function rectifyUrl(url) {
  * numOfHeadlines: number of headlines that the function should return.
  */
 exports.fetchHeadlines = async function(
-  country = "",
+  country = "in",
   source = null,
   numOfHeadlines = 3
 ) {
@@ -52,7 +57,7 @@ exports.fetchHeadlines = async function(
       return {
         title: obj.title,
         description: obj.description,
-        author: obj.source.name,
+        source: obj.source.name,
         url: rectifyUrl(obj.url),
         urlToImage: rectifyUrl(obj.urlToImage)
       };

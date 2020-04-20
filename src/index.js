@@ -1,7 +1,7 @@
-var news = require("./news.js");
-var buildBlock = require("./buildBlock.js");
-var fakeNews = require("./fake-news.js");
-var stats = require("./stats.js");
+const news = require("./news.js");
+const buildBlock = require("./buildBlock.js");
+const fakeNews = require("./fake-news.js");
+const stats = require("./stats.js");
 
 require("dotenv").config();
 

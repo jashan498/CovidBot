@@ -1,7 +1,27 @@
 const axios = require("axios");
 const moment = require("moment");
 
+const NUM_NEWS_API = 20;
+const NUM_NEWS_RETURNED = 3;
+
 require("dotenv").config();
+
+/**
+ * Function to randomise the headlines returned to users
+ * as the news API returns headlines in a defined order.
+ */
+function randomSelect(headlines) {
+  let indices = [];
+  let finalHeadlines = [];
+  while (indices.length < NUM_NEWS_RETURNED) {
+    let index = Math.floor(Math.random() * headlines.length);
+    if (indices.indexOf(index) === -1) {
+      indices.push(index);
+      finalHeadlines.push(headlines[index]);
+    }
+  }
+  return finalHeadlines;
+}
 
 function returnDate(numDaysBack = 0) {
   return moment()
@@ -15,7 +35,7 @@ function editSource(source) {
 
 function headlinesAPI(country, source, numOfHeadlines) {
   return `https://newsapi.org/v2/top-headlines?country=${country}&q=COVID&\
-from=${returnDate(5)}&to=${returnDate()}&sortBy=popularity\
+from=${returnDate(7)}&to=${returnDate()}&sortBy=popularity\
 &apiKey=${process.env.NEWS_API_KEY}&pageSize=${numOfHeadlines}&page=1`;
 }
 
@@ -48,12 +68,13 @@ http: function rectifyUrl(url) {
 exports.fetchHeadlines = async function(
   country = "in",
   source = null,
-  numOfHeadlines = 3
+  numOfHeadlines = NUM_NEWS_API
 ) {
   try {
     let res = await axios.get(headlinesAPI(country, source, numOfHeadlines));
+    res = randomSelect(res.data.articles);
     console.log(res);
-    return res.data.articles.map(obj => {
+    return res.map(obj => {
       return {
         title: obj.title,
         description: obj.description,

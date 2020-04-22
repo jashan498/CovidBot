@@ -33,8 +33,12 @@ function editSource(source) {
   return source ? `sources=${source}&` : "";
 }
 
+function editCountry(country) {
+  return country !== "" ? `country=${country}&` : "";
+}
+
 function headlinesAPI(country, source, numOfHeadlines) {
-  return `https://newsapi.org/v2/top-headlines?country=${country}&q=COVID&\
+  return `https://newsapi.org/v2/top-headlines?${editCountry(country)}q=COVID&\
 from=${returnDate(7)}&to=${returnDate()}&sortBy=popularity\
 &apiKey=${process.env.NEWS_API_KEY}&pageSize=${numOfHeadlines}&page=1`;
 }
@@ -66,7 +70,7 @@ http: function rectifyUrl(url) {
  * numOfHeadlines: number of headlines that the function should return.
  */
 exports.fetchHeadlines = async function(
-  country = "in",
+  country,
   source = null,
   numOfHeadlines = NUM_NEWS_API
 ) {

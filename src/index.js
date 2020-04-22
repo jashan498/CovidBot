@@ -2,6 +2,14 @@ const news = require("./news.js");
 const buildBlock = require("./buildBlock.js");
 const fakeNews = require("./fake-news.js");
 const stats = require("./stats.js");
+const {
+  QUERY_NEWS,
+  QUERY_STAT,
+  QUERY_UNKNOWN,
+  QUERY_NEWS_STAT,
+  QUERY_STAT_NEWS,
+  queryType
+} = require("./queryType.js");
 
 require("dotenv").config();
 
@@ -19,7 +27,7 @@ app.receiver.app.get("/test", async (_, res) => {
   headlines = headlines.map((obj, i) => {
     return { ...obj, ...fakeNewsIndexArray[i] };
   });
-  console.log(headlines);
+  // console.log(headlines);
   res.send(headlines);
 });
 
@@ -32,8 +40,8 @@ async function fetchFakeScore(headlines) {
   return scores;
 }
 
-async function getNewsObject() {
-  let headlines = await news.fetchHeadlines();
+async function getNewsObject(country) {
+  let headlines = await news.fetchHeadlines(country);
   let fakeNewsIndexArray = await fetchFakeScore(headlines);
   // zip headlines and their fakeness scre
   headlines = headlines.map((obj, i) => {
@@ -42,24 +50,33 @@ async function getNewsObject() {
   return headlines;
 }
 
-async function sendNews(payload) {
-  let news = await getNewsObject();
+async function sendNews(payload, country, isFirst = true) {
+  let news = await getNewsObject(country);
   const result = await app.client.chat.postMessage({
     token: process.env.OAUTH_BOT_TOKEN,
     channel: payload.channel,
     text: "This is fallback text",
-    blocks: buildBlock.createMainBlockNews(news, payload.user)
+    blocks: buildBlock.createMainBlockNews(news, payload.user, isFirst)
   });
   return result;
 }
 
-async function sendStatistics(payload) {
+async function sendStatistics(payload, isFirst = true) {
   let statistics = await stats.getStatsByCountry();
   const result = await app.client.chat.postMessage({
     token: process.env.OAUTH_BOT_TOKEN,
     channel: payload.channel,
     text: "This is fallback text",
-    blocks: buildBlock.createMainBlockStat(statistics, payload.user)
+    blocks: buildBlock.createMainBlockStat(statistics, payload.user, isFirst)
+  });
+  return result;
+}
+
+async function sendUnknownMessage(payload) {
+  const result = await app.client.chat.postMessage({
+    token: process.env.OAUTH_BOT_TOKEN,
+    channel: payload.channel,
+    text: "Sorry, I'm having trouble understanding you."
   });
   return result;
 }
@@ -67,11 +84,25 @@ async function sendStatistics(payload) {
 app.message(directMention(), async ({ payload, context }) => {
   const text = payload.text;
   try {
-    if (text.includes("news") || text.includes("headline")) {
-      await sendNews(payload);
-    } else if (text.includes("stat")) {
+    let query = queryType(text);
+    if (query.type === QUERY_NEWS_STAT) {
+      await sendNews(payload, query.country);
+      await sendStatistics(payload, false);
+    } else if (query.type === QUERY_STAT_NEWS) {
       await sendStatistics(payload);
+      await sendNews(payload, query.country, false);
+    } else if (query.type === QUERY_NEWS) {
+      await sendNews(payload, query.country);
+    } else if (query.type === QUERY_STAT) {
+      await sendStatistics(payload);
+    } else {
+      sendUnknownMessage(payload);
     }
+    // if (text.includes("news") || text.includes("headline")) {
+    //   await sendNews(payload);
+    // } else if (text.includes("stat")) {
+    //   await sendStatistics(payload);
+    // }
     // console.log(result);
   } catch (error) {
     console.log(error);
@@ -81,5 +112,6 @@ app.message(directMention(), async ({ payload, context }) => {
 (async () => {
   // Start your app
   await app.start(process.env.PORT || 3000);
+  console.log(queryType("this is us news and stat"));
   console.log("⚡️ Bolt app is running!");
 })();

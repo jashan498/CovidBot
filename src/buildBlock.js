@@ -1,19 +1,31 @@
-function welcomeMessage(userId) {
+function welcomeMessage(userId, isFirst) {
+  let message = "";
+  if (isFirst) {
+    message = `Hey <@${userId}>! here are some *COVID-19* related updates:\n\n`;
+  } else {
+    message = `*Also, some major headlines:*`;
+  }
   return {
     type: "section",
     text: {
       type: "mrkdwn",
-      text: `Hey <@${userId}>! here are some *COVID-19* related updates:\n\n`
+      text: message
     }
   };
 }
 
-function welcomeMessage_stat(userId) {
+function welcomeMessage_stat(userId, isFirst) {
+  let message = "";
+  if (isFirst) {
+    message = `Hey <@${userId}>! here are stats:\n\n`;
+  } else {
+    message = `*Also, these are some numbers elated to the Pandemic:*`;
+  }
   return {
     type: "section",
     text: {
       type: "mrkdwn",
-      text: `Hey <@${userId}>! here are stats:\n\n`
+      text: message
     }
   };
 }
@@ -90,8 +102,8 @@ function createAuthorBlock(author) {
   };
 }
 
-exports.createMainBlockNews = function(newsObject, userId) {
-  let block = [welcomeMessage(userId), divider];
+exports.createMainBlockNews = function(newsObject, userId, isFirst = true) {
+  let block = [welcomeMessage(userId, isFirst), divider];
   for (let news in newsObject) {
     if (Object.prototype.hasOwnProperty.call(newsObject, news)) {
       let singleNewsBlock = [
@@ -110,8 +122,8 @@ exports.createMainBlockNews = function(newsObject, userId) {
   return block;
 };
 
-exports.createMainBlockStat = function(statObject, userId) {
-  let block = [welcomeMessage_stat(userId), divider];
+exports.createMainBlockStat = function(statObject, userId, isFirst = true) {
+  let block = [welcomeMessage_stat(userId, isFirst), divider];
   for (let stat in statObject) {
     if (Object.prototype.hasOwnProperty.call(statObject, stat)) {
       let singlestatBlock = [

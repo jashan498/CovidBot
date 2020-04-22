@@ -3,25 +3,9 @@ const moment = require("moment");
 
 require("dotenv").config();
 
-// function returnDate(numDaysBack = 0) {
-//   return moment()
-//     .subtract(numDaysBack, "days")
-//     .format("YYYY-MM-DD");
-// }
-
 function getStats(country) {
     return `https://api.covid19api.com/live/country/${country}/status/confirmed`;
 }
-
-
-// function rectifyUrl(url) {
-//   if (url && url.includes("https: //")) {
-//     return "https:" + url.slice(7);
-//   } else {
-//     return url;
-//   }
-// }
-
 
 exports.getStatsByCountry = async function(
   country = "india"
@@ -32,16 +16,30 @@ exports.getStatsByCountry = async function(
     {
         throw new Error("Country not found");
     }
-    let res2=[res.data[res.data.length-1]];
-    // return res2;
-    return res2.map(obj => {
-      return {
-        "Confirmed": obj.Confirmed,
-        "Deaths": obj.Deaths,
-        "Recovered": obj.Recovered,
-        "Active": obj.Active
-      };
-    });
+    date_today=res.data[res.data.length-1].Date;
+    curr=res.data.filter(
+      function (entry)
+      {
+        return entry.Date===date_today
+      }
+    );
+    conf=0;
+    dea=0;
+    rec=0;
+    act=0;
+    for(let i in curr)
+    {
+      conf+=parseInt(curr[i].Confirmed);
+      dea+=parseInt(curr[i].Deaths);
+      rec+=parseInt(curr[i].Recovered);
+      act+=parseInt(curr[i].Active);
+    }
+    return [{
+        "Confirmed": conf,
+        "Deaths": dea,
+        "Recovered": rec,
+        "Active": act
+    }];
   } catch (error) {
       console.log(error);
     console.log("Check country name or add join separate words by '-'");

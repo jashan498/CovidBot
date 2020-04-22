@@ -61,8 +61,8 @@ async function sendNews(payload, country, isFirst = true) {
   return result;
 }
 
-async function sendStatistics(payload, isFirst = true) {
-  let statistics = await stats.getStatsByCountry();
+async function sendStatistics(payload, isFirst = true, country) {
+  let statistics = await stats.getStatsByCountry(country);
   const result = await app.client.chat.postMessage({
     token: process.env.OAUTH_BOT_TOKEN,
     channel: payload.channel,
@@ -87,14 +87,14 @@ app.message(directMention(), async ({ payload, context }) => {
     let query = queryType(text);
     if (query.type === QUERY_NEWS_STAT) {
       await sendNews(payload, query.country);
-      await sendStatistics(payload, false);
+      await sendStatistics(payload, false, query.country);
     } else if (query.type === QUERY_STAT_NEWS) {
-      await sendStatistics(payload);
+      await sendStatistics(payload,true, query.country);
       await sendNews(payload, query.country, false);
     } else if (query.type === QUERY_NEWS) {
       await sendNews(payload, query.country);
     } else if (query.type === QUERY_STAT) {
-      await sendStatistics(payload);
+      await sendStatistics(payload,true, query.country);
     } else {
       sendUnknownMessage(payload);
     }

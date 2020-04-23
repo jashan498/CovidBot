@@ -1,7 +1,7 @@
 const axios = require("axios");
 const moment = require("moment");
 
-const NUM_NEWS_API = 20;
+const NUM_NEWS_API = 15;
 const NUM_NEWS_RETURNED = 3;
 
 require("dotenv").config();
@@ -39,7 +39,7 @@ function editCountry(country) {
 
 function headlinesAPI(country, source, numOfHeadlines) {
   return `https://newsapi.org/v2/top-headlines?${editCountry(country)}q=COVID&\
-from=${returnDate(7)}&to=${returnDate()}&sortBy=popularity\
+from=${returnDate(30)}&to=${returnDate()}\
 &apiKey=${process.env.NEWS_API_KEY}&pageSize=${numOfHeadlines}&page=1`;
 }
 

@@ -8,7 +8,6 @@ const countryCode = {
   argentina: "ar",
   australia: "au",
   canada: "ca",
-  china: "cn",
   france: "fr",
   germany: "de",
   greece: "gr",
@@ -19,8 +18,8 @@ const countryCode = {
   america: "us"
 };
 
-const newsStatPattern = /[\sa-z0-9]*news[\sa-z0-9]*stat[\sa-z0-9]*/i;
-const statNewsPattern = /[\sa-z0-9]*stat[\sa-z0-9]*news[\sa-z0-9]*/i;
+const newsStatPattern = /[\sa-z0-9]*(news|headline)[\sa-z0-9]*(stat|number)[\sa-z0-9]*/i;
+const statNewsPattern = /[\sa-z0-9]*(stat|number)[\sa-z0-9]*(news|headline)[\sa-z0-9]*/i;
 
 function queryType(text) {
   let countries = ["in"]; // default country is set to India
@@ -44,12 +43,12 @@ function queryType(text) {
       type: QUERY_STAT_NEWS,
       country: countries[countries.length - 1]
     };
-  } else if (text.includes("news")) {
+  } else if (text.includes("news") || text.includes("headline")) {
     return {
       type: QUERY_NEWS,
       country: countries[countries.length - 1]
     };
-  } else if (text.includes("stat")) {
+  } else if (text.includes("stat") || text.includes("number")) {
     return {
       type: QUERY_STAT,
       country: countries[countries.length - 1]

@@ -2,6 +2,7 @@ const news = require("./news.js");
 const buildBlock = require("./buildBlock.js");
 const fakeNews = require("./fake-news.js");
 const stats = require("./stats.js");
+const homeView = require("./homeView.js");
 const {
   QUERY_NEWS,
   QUERY_STAT,
@@ -29,6 +30,25 @@ app.receiver.app.get("/test", async (_, res) => {
   });
   // console.log(headlines);
   res.send(headlines);
+});
+
+// Listen to the app_home_opened Events API event to hear when a user opens your app from the sidebar
+app.event("app_home_opened", async ({ payload, context }) => {
+  const userId = payload.user;
+
+  try {
+    // Call the views.publish method using the built-in WebClient
+    const result = await app.client.views.publish({
+      // The token you used to initialize your app is stored in the `context` object
+      token: context.botToken,
+      user_id: userId,
+      view: homeView.returnhomeView(userId)
+    });
+
+    console.log(result);
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 async function fetchFakeScore(headlines) {
@@ -89,12 +109,12 @@ app.message(directMention(), async ({ payload, context }) => {
       await sendNews(payload, query.country);
       await sendStatistics(payload, false, query.country);
     } else if (query.type === QUERY_STAT_NEWS) {
-      await sendStatistics(payload,true, query.country);
+      await sendStatistics(payload, true, query.country);
       await sendNews(payload, query.country, false);
     } else if (query.type === QUERY_NEWS) {
       await sendNews(payload, query.country);
     } else if (query.type === QUERY_STAT) {
-      await sendStatistics(payload,true, query.country);
+      await sendStatistics(payload, true, query.country);
     } else {
       sendUnknownMessage(payload);
     }
@@ -112,6 +132,5 @@ app.message(directMention(), async ({ payload, context }) => {
 (async () => {
   // Start your app
   await app.start(process.env.PORT || 3000);
-  console.log(queryType("this is us news and stat"));
   console.log("⚡️ Bolt app is running!");
 })();

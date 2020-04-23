@@ -19,7 +19,7 @@ function welcomeMessage_stat(userId, isFirst) {
   if (isFirst) {
     message = `Hey <@${userId}>! here are stats:\n\n`;
   } else {
-    message = `*Also, these are some numbers elated to the Pandemic:*`;
+    message = `*Also, these are some numbers related to the Pandemic:*`;
   }
   return {
     type: "section",

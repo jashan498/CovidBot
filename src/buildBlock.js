@@ -61,7 +61,7 @@ function createStatBlock(a, b, c, d) {
     type: "section",
     text: {
       type: "mrkdwn",
-      text: `*Confirmed:* ${a}\n*Deaths:* ${b}\n*Recovered:* ${c}\n*Active:* ${d}\n`
+      text: `*Confirmed:* ${a}\n*Deaths:* ${b}\n*Active:* ${d}\n`
     }
   };
   return statisBlock;
